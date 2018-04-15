@@ -79,7 +79,9 @@ var VideoChat = {
       });
 
       VideoChat.peerConnection.onicecandidate = VideoChat.onIceCandidate;
+      VideoChat.peerConnection.onaddstream = VideoChat.onAddStream;
       VideoChat.socket.on('candidate', VideoChat.onCandidate);
+      VideoChat.socket.on('answer', VideoChat.onAnswer);
       callback();
 
     }
@@ -102,11 +104,20 @@ var VideoChat = {
     VideoChat.peerConnection.addIceCandidate(rtcCandidate);
   },
 
+  onAnswer: function(answer){
+    var rtcAnswer = new RTCSessionDescription(JSON.parse(answer));
+    VideoChat.peerConnection.setRemoteDescription(rtcAnswer);
+  },
+
   onIceCandidate: function(event){
     if(event.candidate){
       console.log('Generated candidate!');
       VideoChat.socket.emit('candidate', JSON.stringify(event.candidate));
     }
+  },
+
+  onAddStream: function(event){
+    VideoChat.remoteVideo.src = window.URL.createObjectURL(event.stream);
   },
 
   noMediaStream: function(){
