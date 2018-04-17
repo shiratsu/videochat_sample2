@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #url{
+  width: 250px;
+}
+#port{
+  width: 70px;
+}
+    </style>
+    </head>
+<body>
+    <h1>
+ Test TURN server
+</h1>
+<div>
+TURN URL: <input id='url' placeholder='example.com  or  xxx.yyy.rrr.ddd'  />
+Port: <input type='number' value='3478' id='port' placeholder='enter a port number' />
+</div>
+<div>
+Transport: <input type="radio" name="transport" id="tcp" value="tcp" /> TCP
+<input type="radio" name="transport" id="udp" value="udp" checked/>UDP
+</div>
+
+<div>
+Username: <input id="name" placeholder="turn username" />
+</div>
+<div>
+password: <input id="pass" placeholder="turn password" />
+</div>
+
+<div>
+checking Timeout: <input type='number'  id="time" placeholder="wait time  before checking timeout" value=5000 />
+</div>
+<div>
+<button id='button'>
+Check TURN Server
+</button>
+</div>
+
+<h4 id='result'></h4>
+<script type="text/javascript">
+var res = id('result');
+
+id('button').onclick = function(){
+    res.innerHTML = 'Checking TURN Server...';
+  var url = 'turn:'+id('url').value+':'+id('port').value,
+          useUDP = id('udp').checked;
+  url +='?transport=' + (useUDP ? 'udp': 'tcp');
+  checkTURNServer({
+      urls: url,
+      username: id('name').value,
+      credential: id('pass').value
+  }, id('time').value).then(function(bool){
+          if(bool)
+         res.innerHTML = 'Yep, the TURN server works...';
+      else
+         throw new Error('Doesn\'t work');
+  }).catch(function(e){
+       console.log(e);
+     res.innerHTML = 'TURN server does not work.';
+  });
+};
+
+
+function checkTURNServer(turnConfig, timeout){
+    console.log('turnConfig: ', turnConfig);
+  return new Promise(function(resolve, reject){
+
+    setTimeout(function(){
+        if(promiseResolved) return;
+        resolve(false);
+        promiseResolved = true;
+    }, timeout || 5000);
+
+    var promiseResolved = false
+      , myPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection   //compatibility for firefox and chrome
+      , pc = new myPeerConnection({iceServers:[turnConfig]})
+      , noop = function(){};
+    pc.createDataChannel("");    //create a bogus data channel
+    pc.createOffer(function(sdp){
+      if(sdp.sdp.indexOf('typ relay') > -1){ // sometimes sdp contains the ice candidates...
+        promiseResolved = true;
+        resolve(true);
+      }
+      pc.setLocalDescription(sdp, noop, noop);
+    }, noop);    // create offer and set local description
+    pc.onicecandidate = function(ice){  //listen for candidate events
+      if(promiseResolved || !ice || !ice.candidate || !ice.candidate.candidate || !(ice.candidate.candidate.indexOf('typ relay')>-1))  return;
+      promiseResolved = true;
+      resolve(true);
+    };
+  });
+}
+
+
+function id(val){
+    return document.getElementById(val);
+}
+</script>
+</body>
+</html>

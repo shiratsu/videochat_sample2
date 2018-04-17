@@ -57,14 +57,17 @@ io.on('connection', function(socket){
   });
 
   socket.on('candidate', function(candidate){
+    console.log('candidate');
     socket.broadcast.emit('candidate', candidate);
   });
 
   socket.on('offer', function(offer){
+    console.log('offer');
     socket.broadcast.emit('offer', offer);
   });
 
   socket.on('answer', function(answer){
+    console.log('answer');
     socket.broadcast.emit('answer', answer);
   });
 });

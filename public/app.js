@@ -57,8 +57,10 @@ var VideoChat = {
   },
 
   createAnswer: function(offer){
+    console.log("createAnswer");
+    console.log(offer);
     return function(){
-      rtcOffer = new RTCSessionDescription(JSON.parse(offer));
+      var rtcOffer = new RTCSessionDescription(JSON.parse(offer));
       VideoChat.peerConnection.setRemoteDescription(rtcOffer);
       VideoChat.peerConnection.createAnswer(
         function(answer){
@@ -77,7 +79,7 @@ var VideoChat = {
       VideoChat.peerConnection = new RTCPeerConnection({
         iceServers: token.iceServers
       });
-
+      VideoChat.peerConnection.addStream(VideoChat.localStream);
       VideoChat.peerConnection.onicecandidate = VideoChat.onIceCandidate;
       VideoChat.peerConnection.onaddstream = VideoChat.onAddStream;
       VideoChat.socket.on('candidate', VideoChat.onCandidate);
@@ -100,16 +102,19 @@ var VideoChat = {
   },
 
   onCandidate: function(candidate){
-    rtcCandidate = new RTCIceCandidate(JSON.parse(candidate));
+    console.log('onCandidate');
+    var rtcCandidate = new RTCIceCandidate(JSON.parse(candidate));
     VideoChat.peerConnection.addIceCandidate(rtcCandidate);
   },
 
   onAnswer: function(answer){
+    console.log('onAnswer');
     var rtcAnswer = new RTCSessionDescription(JSON.parse(answer));
     VideoChat.peerConnection.setRemoteDescription(rtcAnswer);
   },
 
   onIceCandidate: function(event){
+    console.log('onIceCandidate');
     if(event.candidate){
       console.log('Generated candidate!');
       VideoChat.socket.emit('candidate', JSON.stringify(event.candidate));
@@ -117,6 +122,7 @@ var VideoChat = {
   },
 
   onAddStream: function(event){
+    VideoChat.remoteVideo = document.getElementById('remote-video');
     VideoChat.remoteVideo.src = window.URL.createObjectURL(event.stream);
   },
 
