@@ -12,7 +12,7 @@ let stun_turn_config
 let stun_turn_config = {"iceServers":[
     {"urls": "stun:localhost:3478","username":"hiratsuka", "credential":"test"},
     {"urls":"stun:localhost:3478?transport=udp", "username":"hiratsuka", "credential":"test"},
-    {"urls":"turn:localhost:3478?transport=tcp", "username":"user", "credential":"password"}
+    {"urls":"turn:localhost:3478?transport=tcp", "username":"hiratsuka", "credential":"test"}
   ]};
 
 
