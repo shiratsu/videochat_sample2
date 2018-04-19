@@ -6,16 +6,17 @@ var constraints = window.constraints = {
   audio: false,
   video: true
 };
-
-let stun_turn_config
-
 let stun_turn_config = {"iceServers":[
     {"urls": "stun:localhost:3478","username":"hiratsuka", "credential":"test"},
     {"urls":"stun:localhost:3478?transport=udp", "username":"hiratsuka", "credential":"test"},
     {"urls":"turn:localhost:3478?transport=tcp", "username":"hiratsuka", "credential":"test"}
   ]};
 
+// let stun_turn_config = {"iceServers":[
+//     ]};
 
+// let stun_turn_config = {"iceServers":[{urls: "stun:global.stun.twilio.com:3478?transport=udp" }
+//     ]};
 
 var VideoChat = {
   socket: io(),
@@ -46,6 +47,8 @@ var VideoChat = {
 
     VideoChat.socket.on('token', VideoChat.onToken(VideoChat.createAnswer(offer)));
     VideoChat.socket.emit('token');
+
+    // VideoChat.createAnswer(offer);
   },
 
   readyToCall: function(event){
@@ -58,11 +61,22 @@ var VideoChat = {
     console.log("Things are going as planned!");
 
     VideoChat.peerConnection = new RTCPeerConnection({
-      iceServers: [{urls: "stun:global.stun.twilio.com:3478?transport=udp" }]
+      iceServers: stun_turn_config
     });
 
     VideoChat.socket.on('token', VideoChat.onToken(VideoChat.createOffer));
     VideoChat.socket.emit('token');
+
+    // VideoChat.peerConnection = new RTCPeerConnection({
+    //   iceServers: stun_turn_config
+    // });
+    // VideoChat.peerConnection.addStream(VideoChat.localStream);
+    // VideoChat.peerConnection.onicecandidate = VideoChat.onIceCandidate;
+    // VideoChat.peerConnection.onaddstream = VideoChat.onAddStream;
+    // VideoChat.socket.on('candidate', VideoChat.onCandidate);
+    // VideoChat.socket.on('answer', VideoChat.onAnswer);
+    //
+    // VideoChat.createOffer();
   },
 
   createAnswer: function(offer){
@@ -86,7 +100,7 @@ var VideoChat = {
   onToken: function(callback){
     return function(token){
       VideoChat.peerConnection = new RTCPeerConnection({
-        iceServers: token.iceServers
+        iceServers: stun_turn_config
       });
       VideoChat.peerConnection.addStream(VideoChat.localStream);
       VideoChat.peerConnection.onicecandidate = VideoChat.onIceCandidate;
@@ -131,6 +145,7 @@ var VideoChat = {
   },
 
   onAddStream: function(event){
+    console.log('onAddStream');
     VideoChat.remoteVideo = document.getElementById('remote-video');
     VideoChat.remoteVideo.src = window.URL.createObjectURL(event.stream);
   },

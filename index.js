@@ -47,13 +47,14 @@ io.on('connection', function(socket){
   });
 
   socket.on('token', function(){
-    twilio.tokens.create(function(err, response){
-      if(err){
-        console.log(err);
-      }else{
-        socket.emit('token', response);
-      }
-    });
+    // twilio.tokens.create(function(err, response){
+    //   if(err){
+    //     console.log(err);
+    //   }else{
+    //     socket.emit('token', response);
+    //   }
+    // });
+    socket.broadcast.emit('token', '');
   });
 
   socket.on('candidate', function(candidate){
