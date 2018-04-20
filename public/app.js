@@ -26,6 +26,8 @@ var VideoChat = {
     VideoChat.localVideo.volume = 0;
     VideoChat.localStream = stream;
     VideoChat.videoButton.setAttribute('disabled', 'disabled');
+    VideoChat.callButton.removeAttribute('disabled');
+    VideoChat.recordButton.removeAttribute('disabled');
 
     if ('srcObject' in VideoChat.localVideo) {
        VideoChat.localVideo.srcObject = stream;
@@ -59,6 +61,9 @@ var VideoChat = {
   startCall: function(event){
     console.log("startCall");
     console.log("Things are going as planned!");
+
+    VideoChat.hangupButton.removeAttribute('disabled');
+    VideoChat.stopButton.removeAttribute('disabled');
 
     VideoChat.peerConnection = new RTCPeerConnection({
       iceServers: stun_turn_config
@@ -159,10 +164,55 @@ var VideoChat = {
 VideoChat.videoButton = document.getElementById('get-video');
 VideoChat.localVideo = document.getElementById('local-video');
 VideoChat.remoteVideo = document.getElementById('remote-video');
-// function startVideo(){
-//   navigator.mediaDevices.getUserMedia(constraints).
-//     then(VideoChat.onMediaStream).catch(VideoChat.noMediaStream);
-// }
+
+function startVideo(){
+  console.log("startVideo");
+  navigator.mediaDevices.getUserMedia(constraints).
+    then(VideoChat.onMediaStream).catch(VideoChat.noMediaStream);
+}
+
+function stopVideo(){
+  console.log("stopVideo");
+
+  pauseVideo(VideoChat.localVideo);
+  pauseVideo(VideoChat.remoteVideo);
+
+  stopLocalStream(VideoChat.localStream);
+}
+
+function hangup(){
+  VideoChat.peerConnection.close();
+  VideoChat.peerConnection = null;
+  pauseVideo(VideoChat.remoteVideo);
+}
+
+function pauseVideo(element) {
+  element.pause();
+  if ('srcObject' in element) {
+    element.srcObject = null;
+  }
+  else {
+    if (element.src && (element.src !== '') ) {
+      window.URL.revokeObjectURL(element.src);
+    }
+    element.src = '';
+  }
+}
+
+function stopLocalStream(stream) {
+  let tracks = stream.getTracks();
+  if (! tracks) {
+    console.warn('NO tracks');
+    return;
+  }
+  for (let track of tracks) {
+    track.stop();
+  }
+}
+
+function startRecord(){
+  
+}
 
 
 // VideoChat.videoButton.addEventListener(
@@ -174,6 +224,9 @@ VideoChat.remoteVideo = document.getElementById('remote-video');
 
 // app.js
 VideoChat.callButton = document.getElementById('call');
+VideoChat.hangupButton = document.getElementById('hangup');
+VideoChat.stopButton = document.getElementById('stop-video');
+VideoChat.recordButton = document.getElementById('record');
 
 VideoChat.callButton.addEventListener(
   'click',
@@ -181,5 +234,5 @@ VideoChat.callButton.addEventListener(
   false
 );
 
-navigator.mediaDevices.getUserMedia(constraints).
-    then(VideoChat.onMediaStream).catch(VideoChat.noMediaStream);
+// navigator.mediaDevices.getUserMedia(constraints).
+//     then(VideoChat.onMediaStream).catch(VideoChat.noMediaStream);
