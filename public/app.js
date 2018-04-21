@@ -174,6 +174,8 @@ function startVideo(){
 function stopVideo(){
   console.log("stopVideo");
 
+  stopRecord(VideoChat.localStream);
+
   pauseVideo(VideoChat.localVideo);
   pauseVideo(VideoChat.remoteVideo);
 
@@ -211,16 +213,24 @@ function stopLocalStream(stream) {
 }
 
 function startRecord(){
-  
+  console.log("start record");
+    VideoChat.recorder = new MediaRecorder(VideoChat.localStream);
+    VideoChat.recorder.ondataavailable = function(evt) {
+        // 録画が終了したタイミングで呼び出される
+        console.log("send data");
+        let videoBlob = new Blob([evt.data], { type: evt.data.type });
+        let message = {data:videoBlob,type:'binary',datatype:evt.data.type}
+        VideoChat.socket.emit('binary',videoBlob);
+    }
+
+    // 録画開始
+    VideoChat.recorder.start();
 }
 
-
-// VideoChat.videoButton.addEventListener(
-//   'click',
-//   navigator.mediaDevices.getUserMedia(constraints).
-//       then(VideoChat.onMediaStream).catch(VideoChat.noMediaStream),
-//   false
-// );
+function stopRecord(){
+  console.log("stop record");
+  VideoChat.recorder.stop();
+}
 
 // app.js
 VideoChat.callButton = document.getElementById('call');
@@ -233,6 +243,8 @@ VideoChat.callButton.addEventListener(
   VideoChat.startCall,
   false
 );
+
+
 
 // navigator.mediaDevices.getUserMedia(constraints).
 //     then(VideoChat.onMediaStream).catch(VideoChat.noMediaStream);
