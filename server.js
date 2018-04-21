@@ -1,33 +1,24 @@
-// index.js
-var Hapi = require('hapi');
-var fs = require('fs');
-var server = new Hapi.Server()
-server.connection({
-  // 'host': 'localhost',
-  'host': '54.250.249.132',
-  'port': 80
-});
-// console.log(process.env.ACCOUNT_SID);
-// console.log(process.env.AUTH_TOKEN);
-var socketio = require("socket.io");
-var io = socketio(server.listener);
-// var twilio = require('twilio')(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN);
+const app = require('express')();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+const PORT = process.env.PORT || 3000;
 
-// Serve static assets
-server.route({
-  method: 'GET',
-  path: '/{path*}',
-  handler: {
-    directory: { path: './public', listing: false, index: true }
-  }
+app.get(`/`, (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+app.get(`/app.js`, (req, res) => {
+  res.sendFile(__dirname + '/public/app.js');
+});
+app.get(`/socket.io.js`, (req, res) => {
+  res.sendFile(__dirname + '/public/socket.io.js');
+});
+app.get(`/adapter.js`, (req, res) => {
+  res.sendFile(__dirname + '/public/adapter.js');
 });
 
-// Start the server
-server.start(function () {
-  console.log('Server running at:', server.info.uri);
-});
+io.on('connection', (socket) => {
+  console.log('a user connected');
 
-io.on('connection', function(socket){
   socket.on('join', function(room){
     console.log("join");
     console.log(room);
@@ -88,6 +79,9 @@ io.on('connection', function(socket){
   });
 });
 
+http.listen(PORT, () => {
+  console.log(`listening on *:${PORT}`);
+});
 
 /**
  * 日付をフォーマットする
