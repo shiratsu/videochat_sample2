@@ -28,6 +28,7 @@ var VideoChat = {
     VideoChat.videoButton.setAttribute('disabled', 'disabled');
     VideoChat.callButton.removeAttribute('disabled');
     VideoChat.recordButton.removeAttribute('disabled');
+    VideoChat.stopButton.removeAttribute('disabled');
 
     if ('srcObject' in VideoChat.localVideo) {
        VideoChat.localVideo.srcObject = stream;
