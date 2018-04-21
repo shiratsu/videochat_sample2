@@ -4,8 +4,7 @@ var fs = require('fs');
 var server = new Hapi.Server()
 server.connection({
   // 'host': 'localhost',
-  'host': '54.250.249.132',
-  'port': 80
+  'port': 3000
 });
 // console.log(process.env.ACCOUNT_SID);
 // console.log(process.env.AUTH_TOKEN);
