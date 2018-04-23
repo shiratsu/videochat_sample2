@@ -40,11 +40,11 @@ io.on('connection', function(socket){
     }else if(numClients == 1){
       socket.join(room);
       socket.to(room).emit('ready', room);
-      socket.broadcast.to(room.id).emit('ready', room);
+      socket.broadcast.to(room).emit('ready', room);
       console.log("ready");
     }else{
       console.log("full");
-      socket.to(room.id).emit('full', room);
+      socket.to(room).emit('full', room);
     }
   });
 
@@ -56,17 +56,17 @@ io.on('connection', function(socket){
     //     socket.emit('token', response);
     //   }
     // });
-    socket.broadcast.to(token.id).emit('token', '');
+    socket.broadcast.to(token).emit('token', '');
   });
 
   socket.on('candidate', function(candidate){
     console.log('candidate');
-    socket.broadcast.to(candidate.id).emit('candidate', candidate);
+    socket.broadcast.to(candidate).emit('candidate', candidate);
   });
 
   socket.on('offer', function(offer){
     console.log('offer');
-    socket.broadcast.to(offer.id).emit('offer', offer);
+    socket.broadcast.to(offer).emit('offer', offer);
   });
 
   socket.on('binary', function(videoBlob){
