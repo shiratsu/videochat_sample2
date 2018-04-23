@@ -3,7 +3,7 @@ var Hapi = require('hapi');
 var fs = require('fs');
 var server = new Hapi.Server()
 server.connection({
-  // 'host': 'localhost',
+  'host': 'localhost',
   'port': 3000
 });
 // console.log(process.env.ACCOUNT_SID);
@@ -21,6 +21,8 @@ server.route({
   }
 });
 
+var store = {};
+
 // Start the server
 server.start(function () {
   console.log('Server running at:', server.info.uri);
@@ -28,26 +30,25 @@ server.start(function () {
 
 io.on('connection', function(socket){
   socket.on('join', function(room){
-    console.log("join");
-    console.log(room);
     let clients = io.sockets.adapter.rooms[room];
     let numClients = (typeof clients !== 'undefined') ? clients.length : 0;
-    console.log(clients);
-    console.log(numClients);
+
     if(numClients == 0){
+
       socket.join(room);
+
     }else if(numClients == 1){
       socket.join(room);
-      socket.emit('ready', room);
-      socket.broadcast.emit('ready', room);
+      socket.to(room.id).emit('ready', room);
+      socket.broadcast.to(room.id).emit('ready', room);
       console.log("ready");
     }else{
       console.log("full");
-      socket.emit('full', room);
+      socket.to(room.id).emit('full', room);
     }
   });
 
-  socket.on('token', function(){
+  socket.on('token', function(token){
     // twilio.tokens.create(function(err, response){
     //   if(err){
     //     console.log(err);
@@ -55,17 +56,17 @@ io.on('connection', function(socket){
     //     socket.emit('token', response);
     //   }
     // });
-    socket.broadcast.emit('token', '');
+    socket.broadcast.to(token.id).emit('token', '');
   });
 
   socket.on('candidate', function(candidate){
     console.log('candidate');
-    socket.broadcast.emit('candidate', candidate);
+    socket.broadcast.to(candidate.id).emit('candidate', candidate);
   });
 
   socket.on('offer', function(offer){
     console.log('offer');
-    socket.broadcast.emit('offer', offer);
+    socket.broadcast.to(offer.id).emit('offer', offer);
   });
 
   socket.on('binary', function(videoBlob){
@@ -83,7 +84,7 @@ io.on('connection', function(socket){
 
   socket.on('answer', function(answer){
     console.log('answer');
-    socket.broadcast.emit('answer', answer);
+    socket.broadcast.to(answer.id).emit('answer', answer);
   });
 });
 

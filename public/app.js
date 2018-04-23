@@ -12,6 +12,26 @@ let stun_turn_config = {"iceServers":[
     {"urls":"turn:localhost:3478?transport=tcp", "username":"hiratsuka", "credential":"test"}
   ]};
 
+//変数argはオブジェクトですよ
+var arg = new Object;
+
+// 変数pairにURLの?の後ろを&で区切ったものを配列にして代入
+var pair=location.search.substring(1).split('&');
+    // location.search.substring(1)は、URLから最初の1文字 (?記号) を除いた文字列を取得する
+    // .split('&')は&で区切り配列に分割する
+
+
+// for文でrairがある限りループさせる
+for(var i=0;pair[i];i++) {
+
+　　// 変数kvにpairを=で区切り配列に分割する
+    var kv = pair[i].split('=');// kvはkey-value
+
+　　// 最初に定義したオブジェクトargに連想配列として格納
+    arg[kv[0]]=kv[1];  // kv[0]がkey,kv[1]がvalue
+
+}
+
 // let stun_turn_config = {"iceServers":[
 //     ]};
 
@@ -38,7 +58,7 @@ var VideoChat = {
        VideoChat.localVideo.src = streamUrl;
     }
     console.log("onMediaStream");
-    VideoChat.socket.emit('join', 'test');
+    VideoChat.socket.emit('join', VideoChat.roomid);
     VideoChat.socket.on('ready', VideoChat.readyToCall);
     VideoChat.socket.on('offer', VideoChat.onOffer);
 
@@ -49,7 +69,7 @@ var VideoChat = {
     console.log(offer);
 
     VideoChat.socket.on('token', VideoChat.onToken(VideoChat.createAnswer(offer)));
-    VideoChat.socket.emit('token');
+    VideoChat.socket.to(VideoChat.roomid).emit('token');
 
     // VideoChat.createAnswer(offer);
   },
@@ -71,7 +91,7 @@ var VideoChat = {
     });
 
     VideoChat.socket.on('token', VideoChat.onToken(VideoChat.createOffer));
-    VideoChat.socket.emit('token');
+    VideoChat.socket.to(VideoChat.roomid).emit('token');
 
     // VideoChat.peerConnection = new RTCPeerConnection({
     //   iceServers: stun_turn_config
@@ -94,7 +114,7 @@ var VideoChat = {
       VideoChat.peerConnection.createAnswer(
         function(answer){
           VideoChat.peerConnection.setLocalDescription(answer);
-          VideoChat.socket.emit('answer', JSON.stringify(answer));
+          VideoChat.socket.to(VideoChat.roomid).emit('answer', JSON.stringify(answer));
         },
         function(err){
           console.log(err);
@@ -108,11 +128,11 @@ var VideoChat = {
       VideoChat.peerConnection = new RTCPeerConnection({
         iceServers: stun_turn_config
       });
-      VideoChat.peerConnection.addStream(VideoChat.localStream);
+      VideoChat.peerConnection.to(VideoChat.roomid).addStream(VideoChat.localStream);
       VideoChat.peerConnection.onicecandidate = VideoChat.onIceCandidate;
       VideoChat.peerConnection.onaddstream = VideoChat.onAddStream;
-      VideoChat.socket.on('candidate', VideoChat.onCandidate);
-      VideoChat.socket.on('answer', VideoChat.onAnswer);
+      VideoChat.socket.to(VideoChat.roomid).on('candidate', VideoChat.onCandidate);
+      VideoChat.socket.to(VideoChat.roomid).on('answer', VideoChat.onAnswer);
       callback();
 
     }
@@ -122,7 +142,7 @@ var VideoChat = {
     VideoChat.peerConnection.createOffer(
       function(offer){
         VideoChat.peerConnection.setLocalDescription(offer);
-        VideoChat.socket.emit('offer', JSON.stringify(offer));
+        VideoChat.socket.to(VideoChat.roomid).emit('offer', JSON.stringify(offer));
       },
       function(err){
         console.log(err);
@@ -146,7 +166,7 @@ var VideoChat = {
     console.log('onIceCandidate');
     if(event.candidate){
       console.log('Generated candidate!');
-      VideoChat.socket.emit('candidate', JSON.stringify(event.candidate));
+      VideoChat.socket.to(VideoChat.roomid).emit('candidate', JSON.stringify(event.candidate));
     }
   },
 
@@ -221,7 +241,7 @@ function startRecord(){
         console.log("send data");
         let videoBlob = new Blob([evt.data], { type: evt.data.type });
         let message = {data:videoBlob,type:'binary',datatype:evt.data.type}
-        VideoChat.socket.emit('binary',videoBlob);
+        VideoChat.socket.to(VideoChat.roomid).emit('binary',videoBlob);
     }
 
     // 録画開始
@@ -234,6 +254,7 @@ function stopRecord(){
 }
 
 // app.js
+VideoChat.roomid = arg.roomid;
 VideoChat.callButton = document.getElementById('call');
 VideoChat.hangupButton = document.getElementById('hangup');
 VideoChat.stopButton = document.getElementById('stop-video');
