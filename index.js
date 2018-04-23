@@ -39,7 +39,7 @@ io.on('connection', function(socket){
 
     }else if(numClients == 1){
       socket.join(room);
-      socket.to(room.id).emit('ready', room);
+      socket.to(room).emit('ready', room);
       socket.broadcast.to(room.id).emit('ready', room);
       console.log("ready");
     }else{
