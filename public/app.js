@@ -7,8 +7,8 @@ var constraints = window.constraints = {
   video: true
 };
 let stun_turn_config = {"iceServers":[
-    {"urls": "stun:localhost:3478","username":"username1", "credential":"test"},
-    {"urls":"stun:localhost:3478?transport=udp", "username":"username1", "credential":"test"},
+    {"urls": "stun:localhost:3478"},
+    // {"urls":"stun:localhost:3478?transport=udp", "username":"username1", "credential":"test"},
     {"urls":"turn:localhost:3478?transport=tcp", "username":"username1", "credential":"test"}
   ]};
 
