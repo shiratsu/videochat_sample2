@@ -46,7 +46,7 @@ io.on('connection', function(socket){
       console.log("ready");
     }else{
       console.log("full");
-      socket.to(room).emit('full', room);
+      socket.emit('full', room);
     }
   });
 
@@ -62,7 +62,7 @@ io.on('connection', function(socket){
     console.log(token);
     console.log(token.id);
     // socket.to(token.id).emit('token', '');
-    socket.broadcast.to(token.id).emit('token', '');
+    socket.emit('token', '');
   });
 
   socket.on('candidate', function(candidate){

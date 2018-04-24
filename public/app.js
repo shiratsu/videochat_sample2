@@ -7,9 +7,9 @@ var constraints = window.constraints = {
   video: true
 };
 let stun_turn_config = {"iceServers":[
-    {"urls": "stun:localhost:3478","username":"hiratsuka", "credential":"test"},
-    {"urls":"stun:localhost:3478?transport=udp", "username":"hiratsuka", "credential":"test"},
-    {"urls":"turn:localhost:3478?transport=tcp", "username":"hiratsuka", "credential":"test"}
+    {"urls": "stun:localhost:3478","username":"username1", "credential":"test"},
+    {"urls":"stun:localhost:3478?transport=udp", "username":"username1", "credential":"test"},
+    {"urls":"turn:localhost:3478?transport=tcp", "username":"username1", "credential":"test"}
   ]};
 
 //変数argはオブジェクトですよ
@@ -48,13 +48,8 @@ var VideoChat = {
     VideoChat.recordButton.removeAttribute('disabled');
     VideoChat.stopButton.removeAttribute('disabled');
 
-    if ('srcObject' in VideoChat.localVideo) {
-       VideoChat.localVideo.srcObject = stream;
-    }
-    else {
-       var streamUrl = window.URL.createObjectURL(stream)
-       VideoChat.localVideo.src = streamUrl;
-    }
+    setVideo(VideoChat.localVideo,stream);
+
     console.log("onMediaStream");
     console.log(VideoChat.roomid);
     VideoChat.socket.emit('join', VideoChat.roomid);
@@ -89,7 +84,7 @@ var VideoChat = {
     VideoChat.stopButton.removeAttribute('disabled');
 
     VideoChat.peerConnection = new RTCPeerConnection({
-      iceServers: stun_turn_config
+      stun_turn_config
     });
 
     let message = makeParameter(VideoChat.roomid,'');
@@ -132,7 +127,7 @@ var VideoChat = {
     console.log("onToken");
     return function(token){
       VideoChat.peerConnection = new RTCPeerConnection({
-        iceServers: stun_turn_config
+        stun_turn_config
       });
       VideoChat.peerConnection.addStream(VideoChat.localStream);
       VideoChat.peerConnection.onicecandidate = VideoChat.onIceCandidate;
@@ -145,6 +140,7 @@ var VideoChat = {
   },
 
   createOffer: function(){
+    console.log('createOffer');
     VideoChat.peerConnection.createOffer(
       function(offer){
         VideoChat.peerConnection.setLocalDescription(offer);
@@ -182,7 +178,7 @@ var VideoChat = {
   onAddStream: function(event){
     console.log('onAddStream');
     VideoChat.remoteVideo = document.getElementById('remote-video');
-    VideoChat.remoteVideo.src = window.URL.createObjectURL(event.stream);
+    setVideo(VideoChat.remoteVideo,event.stream);
   },
 
   noMediaStream: function(){
@@ -210,6 +206,17 @@ function stopVideo(){
   pauseVideo(VideoChat.remoteVideo);
 
   stopLocalStream(VideoChat.localStream);
+}
+
+function setVideo(element,stream){
+
+  if ('srcObject' in element) {
+     element.srcObject = stream;
+  }
+  else {
+     var streamUrl = window.URL.createObjectURL(stream)
+     element.src = streamUrl;
+  }
 }
 
 function hangup(){
