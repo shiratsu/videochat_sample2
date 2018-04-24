@@ -35,13 +35,13 @@ io.on('connection', function(socket){
 
 
     if(numClients == 0){
-      console.log("room:"+room);
+      console.log("room1:"+room);
       socket.join(room);
 
     }else if(numClients == 1){
       socket.join(room);
-      console.log("room:"+room);
-      socket.to(room).emit('ready', room);
+      console.log("room2:"+room);
+      socket.emit('ready', room);
       socket.broadcast.to(room).emit('ready', room);
       console.log("ready");
     }else{
