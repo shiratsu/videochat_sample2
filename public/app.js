@@ -19,16 +19,14 @@ var arg = new Object;
 var pair=location.search.substring(1).split('&');
     // location.search.substring(1)は、URLから最初の1文字 (?記号) を除いた文字列を取得する
     // .split('&')は&で区切り配列に分割する
-
-
 // for文でrairがある限りループさせる
 for(var i=0;pair[i];i++) {
 
-　　// 変数kvにpairを=で区切り配列に分割する
-    var kv = pair[i].split('=');// kvはkey-value
+  // 変数kvにpairを=で区切り配列に分割する
+  var kv = pair[i].split('=');// kvはkey-value
 
-　　// 最初に定義したオブジェクトargに連想配列として格納
-    arg[kv[0]]=kv[1];  // kv[0]がkey,kv[1]がvalue
+  // 最初に定義したオブジェクトargに連想配列として格納
+  arg[kv[0]]=kv[1];  // kv[0]がkey,kv[1]がvalue
 
 }
 
@@ -58,6 +56,7 @@ var VideoChat = {
        VideoChat.localVideo.src = streamUrl;
     }
     console.log("onMediaStream");
+    console.log(VideoChat.roomid);
     VideoChat.socket.emit('join', VideoChat.roomid);
     VideoChat.socket.on('ready', VideoChat.readyToCall);
     VideoChat.socket.on('offer', VideoChat.onOffer);
@@ -69,7 +68,10 @@ var VideoChat = {
     console.log(offer);
 
     VideoChat.socket.on('token', VideoChat.onToken(VideoChat.createAnswer(offer)));
-    VideoChat.socket.to(VideoChat.roomid).emit('token');
+
+    let message = makeParameter(VideoChat.roomid,'');
+
+    VideoChat.socket.emit('token',message);
 
     // VideoChat.createAnswer(offer);
   },
@@ -90,8 +92,10 @@ var VideoChat = {
       iceServers: stun_turn_config
     });
 
+    let message = makeParameter(VideoChat.roomid,'');
+
     VideoChat.socket.on('token', VideoChat.onToken(VideoChat.createOffer));
-    VideoChat.socket.to(VideoChat.roomid).emit('token');
+    VideoChat.socket.emit('token',message);
 
     // VideoChat.peerConnection = new RTCPeerConnection({
     //   iceServers: stun_turn_config
@@ -114,7 +118,8 @@ var VideoChat = {
       VideoChat.peerConnection.createAnswer(
         function(answer){
           VideoChat.peerConnection.setLocalDescription(answer);
-          VideoChat.socket.to(VideoChat.roomid).emit('answer', JSON.stringify(answer));
+          let message = makeParameter(VideoChat.roomid,JSON.stringify(answer));
+          VideoChat.socket.emit('answer', message);
         },
         function(err){
           console.log(err);
@@ -124,15 +129,16 @@ var VideoChat = {
   },
 
   onToken: function(callback){
+    console.log("onToken");
     return function(token){
       VideoChat.peerConnection = new RTCPeerConnection({
         iceServers: stun_turn_config
       });
-      VideoChat.peerConnection.to(VideoChat.roomid).addStream(VideoChat.localStream);
+      VideoChat.peerConnection.addStream(VideoChat.localStream);
       VideoChat.peerConnection.onicecandidate = VideoChat.onIceCandidate;
       VideoChat.peerConnection.onaddstream = VideoChat.onAddStream;
-      VideoChat.socket.to(VideoChat.roomid).on('candidate', VideoChat.onCandidate);
-      VideoChat.socket.to(VideoChat.roomid).on('answer', VideoChat.onAnswer);
+      VideoChat.socket.on('candidate', VideoChat.onCandidate);
+      VideoChat.socket.on('answer', VideoChat.onAnswer);
       callback();
 
     }
@@ -142,7 +148,9 @@ var VideoChat = {
     VideoChat.peerConnection.createOffer(
       function(offer){
         VideoChat.peerConnection.setLocalDescription(offer);
-        VideoChat.socket.to(VideoChat.roomid).emit('offer', JSON.stringify(offer));
+        let message = makeParameter(VideoChat.roomid,JSON.stringify(offer));
+        console.log(VideoChat.roomid);
+        VideoChat.socket.emit('offer', message);
       },
       function(err){
         console.log(err);
@@ -166,7 +174,8 @@ var VideoChat = {
     console.log('onIceCandidate');
     if(event.candidate){
       console.log('Generated candidate!');
-      VideoChat.socket.to(VideoChat.roomid).emit('candidate', JSON.stringify(event.candidate));
+      let message = makeParameter(VideoChat.roomid,JSON.stringify(event.candidate));
+      VideoChat.socket.emit('candidate', message);
     }
   },
 
@@ -240,8 +249,8 @@ function startRecord(){
         // 録画が終了したタイミングで呼び出される
         console.log("send data");
         let videoBlob = new Blob([evt.data], { type: evt.data.type });
-        let message = {data:videoBlob,type:'binary',datatype:evt.data.type}
-        VideoChat.socket.to(VideoChat.roomid).emit('binary',videoBlob);
+        let message = makeParameter(VideoChat.roomid,videoBlob);
+        VideoChat.socket.emit('binary',message);
     }
 
     // 録画開始
@@ -250,7 +259,15 @@ function startRecord(){
 
 function stopRecord(){
   console.log("stop record");
+  if(VideoChat.recorder == null){
+    return;
+  }
   VideoChat.recorder.stop();
+}
+
+function makeParameter(roomid,message){
+  let sendData = {id:roomid,data:message};
+  return sendData;
 }
 
 // app.js

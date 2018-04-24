@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Video Chat</title>
+</head>
+<body>
+  <h1>Video Chat</h1>
+  <video id="local-video" height="150" autoplay></video>
+  <video id="remote-video" height="150" autoplay></video>
+
+  <div>
+    <button id="get-video" onclick="startVideo()" >Start Video</button>
+    <button id="stop-video" onclick="stopVideo()" disabled="disabled">Stop Video</button>
+    <button id="call" disabled="disabled">Call</button>
+    <button id="hangup" onclick="hangup()" disabled="disabled">HangUp</button>
+    <button id="record" onclick="startRecord()" disabled="disabled">record</button>
+  </div>
+
+  <script src="socket.io.js"></script>
+  <script src="adapter.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -33,12 +33,14 @@ io.on('connection', function(socket){
     let clients = io.sockets.adapter.rooms[room];
     let numClients = (typeof clients !== 'undefined') ? clients.length : 0;
 
-    if(numClients == 0){
 
+    if(numClients == 0){
+      console.log("room:"+room);
       socket.join(room);
 
     }else if(numClients == 1){
       socket.join(room);
+      console.log("room:"+room);
       socket.to(room).emit('ready', room);
       socket.broadcast.to(room).emit('ready', room);
       console.log("ready");
@@ -49,31 +51,36 @@ io.on('connection', function(socket){
   });
 
   socket.on('token', function(token){
-    // twilio.tokens.create(function(err, response){
+    // twilio.broadcast.tokens.create(function(err, response){
     //   if(err){
     //     console.log(err);
     //   }else{
     //     socket.emit('token', response);
     //   }
     // });
-    socket.broadcast.to(token).emit('token', '');
+    console.log('token');
+    console.log(token);
+    console.log(token.id);
+    // socket.to(token.id).emit('token', '');
+    socket.broadcast.to(token.id).emit('token', '');
   });
 
   socket.on('candidate', function(candidate){
     console.log('candidate');
-    socket.broadcast.to(candidate).emit('candidate', candidate);
+    socket.broadcast.to(candidate.id).emit('candidate', candidate.data);
   });
 
   socket.on('offer', function(offer){
     console.log('offer');
-    socket.broadcast.to(offer).emit('offer', offer);
+    console.log(offer.id);
+    socket.broadcast.to(offer.id).emit('offer', offer.data);
   });
 
-  socket.on('binary', function(videoBlob){
+  socket.on('binary', function(object){
     console.log('binary');
 
     let nowdatetime = formatDate(new Date(),'YYYYMMDDhhmmssSSS');
-      fs.writeFile("/tmp/"+nowdatetime+".webm", videoBlob,  "binary",function(err) {
+      fs.writeFile("/tmp/"+nowdatetime+".webm", object.data,  "binary",function(err) {
           if(err) {
               console.log(err);
           } else {
@@ -84,7 +91,7 @@ io.on('connection', function(socket){
 
   socket.on('answer', function(answer){
     console.log('answer');
-    socket.broadcast.to(answer.id).emit('answer', answer);
+    socket.broadcast.to(answer.id).emit('answer', answer.data);
   });
 });
 
