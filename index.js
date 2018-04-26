@@ -67,6 +67,18 @@ io.on('connection', function(socket){
 
   socket.on('candidate', function(candidate){
     console.log('candidate');
+
+    var cand = candidate.data.split(' ');
+    console.log(cand);
+    console.log('-------------');
+    console.log(cand[7]);
+    console.log(cand[10]);
+    console.log(cand[11]);
+    console.log('-------------');
+    if (cand[7] === 'relay' && cand[10] === 'rport' && cand[11] === '0') {
+        console.log("yes chrome to firefox"); 
+        cand[11] = '9';
+    }
     socket.broadcast.to(candidate.id).emit('candidate', candidate.data);
   });
 
