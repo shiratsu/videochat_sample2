@@ -1,7 +1,9 @@
 // index.js
 var Hapi = require('hapi');
 var fs = require('fs');
-var server = new Hapi.Server()
+var sqlite = require('./db.js');
+var db = sqlite.init('./chat_db');
+var server = new Hapi.Server();
 server.connection({
   'host': 'localhost',
   'port': 3000
@@ -29,25 +31,14 @@ server.start(function () {
 });
 
 io.on('connection', function(socket){
+  console.log("connection");
   socket.on('join', function(room){
-    let clients = io.sockets.adapter.rooms[room];
-    let numClients = (typeof clients !== 'undefined') ? clients.length : 0;
 
-
-    if(numClients == 0){
-      console.log("room1:"+room);
-      socket.join(room);
-
-    }else if(numClients == 1){
-      socket.join(room);
-      console.log("room2:"+room);
-      socket.emit('ready', room);
-      socket.broadcast.to(room).emit('ready', room);
-      console.log("ready");
-    }else{
-      console.log("full");
-      socket.emit('full', room);
-    }
+    // room情報をチェック
+    checkRoomData(db,room,socket,io,db);
+    // console.log("count:"+cnt);
+    //
+    //
   });
 
   socket.on('token', function(token){
@@ -76,7 +67,7 @@ io.on('connection', function(socket){
     console.log(cand[11]);
     console.log('-------------');
     if (cand[7] === 'relay' && cand[10] === 'rport' && cand[11] === '0') {
-        console.log("yes chrome to firefox"); 
+        console.log("yes chrome to firefox");
         cand[11] = '9';
     }
     socket.broadcast.to(candidate.id).emit('candidate', candidate.data);
@@ -129,3 +120,86 @@ var formatDate = function (date, format) {
   }
   return format;
 };
+
+/**
+ * [checkRoomData description]
+ * @param  {[type]} db          [description]
+ * @param  {[type]} paramRoomid [description]
+ * @param  {[type]} socket [description]
+ * @param  {[type]} io [description]
+ * @param  {[type]} db [description]
+ */
+function checkRoomData(db,paramRoomid,socket,io,db){
+
+  let sql = `SELECT count(1) as cnt
+           FROM roomid
+           WHERE roomid  = ?`;
+  let roomid = paramRoomid;
+
+  console.log("roomid:"+roomid);
+  console.log("paramRoomid:"+paramRoomid);
+  db.get(sql, [roomid], (err, row) => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log(row);
+    console.log(row.cnt);
+    setJoinResult(roomid,row.cnt,socket,io,db);
+  });
+
+}
+
+/**
+ * [setRoomData description]
+ * @param {[type]} db     [description]
+ * @param {[type]} roomid [description]
+ */
+function setRoomData(db,roomid){
+  let sql = `insert into roomid values(?)`;
+
+  db.serialize(function () {
+
+    db.run('insert into roomid values ($i)',
+      {
+        $i: roomid
+      }
+    );
+    // ↓でもOK
+    // db.run('insert or ignore into demo_table (id, name) values (?, ?)', [param.id, param.name]);
+  });
+}
+
+/**
+ * [setJoinResult description]
+ * @param {[type]} roomid [description]
+ * @param {[type]} cnt    [description]
+ * @param {[type]} soecket     [description]
+ * @param {[type]} io     [description]
+ * @param {[type]} db     [description]
+ */
+function setJoinResult(room,cnt,socket,io,db){
+
+  let clients = io.sockets.adapter.rooms[room];
+  let numClients = (typeof clients !== 'undefined') ? clients.length : 0;
+  console.log("join");
+
+  if(cnt == 0){
+    if(numClients == 0){
+      console.log("room1:"+room);
+      socket.join(room);
+
+    }else if(numClients == 1){
+      socket.join(room);
+      console.log("room2:"+room);
+      socket.emit('ready', room);
+      socket.broadcast.to(room).emit('ready', room);
+      console.log("ready");
+      setRoomData(db,room);
+    }else{
+      console.log("full");
+      socket.emit('full', room);
+    }
+  }else{
+    socket.emit('ng', room);
+  }
+}

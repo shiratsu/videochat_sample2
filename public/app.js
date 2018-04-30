@@ -9,7 +9,13 @@ var constraints = window.constraints = {
 let stun_turn_config = {"iceServers":[
     {"urls": "stun:localhost:9999"},
     // {"urls":"stun:localhost:3478?transport=udp", "username":"username1", "credential":"test"},
-    {"urls":"turn:localhost:9999?transport=tcp", "username":"username1", "credential":"test"}
+    // {"urls":'stun:stun.l.google.com:19302'},
+    {"urls":"turn:localhost:9999?transport=udp", "username":"username1", "credential":"test"}
+
+    // {"urls": "stun:indival-stun-turn.tk:3478"},
+    // {"urls": "stun:indival-stun-turn.tk:443"},
+    // {"urls":"turn:indival-stun-turn.tk:443?transport=tcp", "username":"hiratsuka", "credential":"test"},
+    // {"urls":"turn:indival-stun-turn.tk:3478?transport=udp", "username":"hiratsuka", "credential":"test"}
   ]};
 
 //変数argはオブジェクトですよ
@@ -38,6 +44,7 @@ for(var i=0;pair[i];i++) {
 
 var VideoChat = {
   socket: io(),
+  // socket: io.connect('https://indival-labo.tk:3000'),
 
   onMediaStream: function(stream){
 
@@ -55,9 +62,18 @@ var VideoChat = {
     VideoChat.socket.emit('join', VideoChat.roomid);
     VideoChat.socket.on('ready', VideoChat.readyToCall);
     VideoChat.socket.on('offer', VideoChat.onOffer);
+    VideoChat.socket.on('full', VideoChat.onFull);
+    VideoChat.socket.on('ng', VideoChat.onNG);
 
   },
 
+  onFull: function(message){
+    alert(message+"満室のため現在入室出来ません。");
+  },
+
+  onNG: function(message){
+    alert(message+"満室のため現在入室出来ません。");
+  },
   onOffer: function(offer){
     console.log('Got an offer')
     console.log(offer);
@@ -83,14 +99,24 @@ var VideoChat = {
     VideoChat.hangupButton.removeAttribute('disabled');
     VideoChat.stopButton.removeAttribute('disabled');
 
-    VideoChat.peerConnection = new RTCPeerConnection({
-      stun_turn_config
-    });
+    // VideoChat.peerConnection = new RTCPeerConnection({
+    //   stun_turn_config
+    // });
 
-    let message = makeParameter(VideoChat.roomid,'');
+    VideoChat.peerConnection = null;
 
-    VideoChat.socket.on('token', VideoChat.onToken(VideoChat.createOffer));
-    VideoChat.socket.emit('token',message);
+    try {
+      VideoChat.peerConnection = new RTCPeerConnection(stun_turn_config);
+      let message = makeParameter(VideoChat.roomid,'');
+
+      VideoChat.socket.on('token', VideoChat.onToken(VideoChat.createOffer));
+      VideoChat.socket.emit('token',message);
+
+    } catch (e) {
+      console.log("Failed to create PeerConnection, exception: " + e.message);
+    }
+
+
 
     // VideoChat.peerConnection = new RTCPeerConnection({
     //   iceServers: stun_turn_config
@@ -126,15 +152,21 @@ var VideoChat = {
   onToken: function(callback){
     console.log("onToken");
     return function(token){
-      VideoChat.peerConnection = new RTCPeerConnection({
-        stun_turn_config
-      });
-      VideoChat.peerConnection.addStream(VideoChat.localStream);
-      VideoChat.peerConnection.onicecandidate = VideoChat.onIceCandidate;
-      VideoChat.peerConnection.onaddstream = VideoChat.onAddStream;
-      VideoChat.socket.on('candidate', VideoChat.onCandidate);
-      VideoChat.socket.on('answer', VideoChat.onAnswer);
-      callback();
+      VideoChat.peerConnection = null;
+
+      try {
+        VideoChat.peerConnection = new RTCPeerConnection(stun_turn_config);
+        VideoChat.peerConnection.addStream(VideoChat.localStream);
+        VideoChat.peerConnection.onicecandidate = VideoChat.onIceCandidate;
+        VideoChat.peerConnection.onaddstream = VideoChat.onAddStream;
+        VideoChat.socket.on('candidate', VideoChat.onCandidate);
+        VideoChat.socket.on('answer', VideoChat.onAnswer);
+        callback();
+
+      } catch (e) {
+        console.log("Failed to create PeerConnection, exception: " + e.message);
+      }
+
 
     }
   },

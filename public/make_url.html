@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Make URL</title>
+</head>
+<body>
+  <h1>Make URL</h1>
+  <h3>したのボタンを押して、動画チャットルームを作成してください<h3>
+
+  <button id="make-url" onclick="makeUrl()" >チャットルームを作成</button>
+  <hr>
+  <br>
+  <div id="explain" style="display: none;">
+    以下URLをチャットしたい相手に共有してください。
+  </div>
+  <br>
+  <div id="urlarea">
+  </div>
+  <br>
+  <div id="urlarea2">
+  </div>
+  <script >
+
+  function makeUrl(){
+    // 生成する文字列の長さ
+    var l = 12;
+    // 生成する文字列に含める文字セット
+    var c = "ABCEFGHIJKLMNOPQRSTUabcdefghijklmnopqrstuvwxyz0123456789";
+    var cl = c.length;
+    var r = "";
+    for(var i=0; i<l; i++){
+        r += c[Math.floor(Math.random()*cl)];
+    }
+
+    document.getElementById("explain").style.display = "block";
+    var element = document.getElementById("urlarea");
+    var element2 = document.getElementById("urlarea2");
+    element.innerHTML = '<a href="https://indival-labo.tk/?roomid='+r+'">チャットルームページ</a>'
+    element2.innerHTML = 'https://indival-labo.tk/?roomid='+r
+    // alert("生成しました");
+  }
+
+  </script>
+
+</body>
+</html>
