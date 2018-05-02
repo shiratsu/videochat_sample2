@@ -3,7 +3,7 @@
 
 // Put variables in global scope to make them available to the browser console.
 var constraints = window.constraints = {
-  audio: false,
+  audio: true,
   video: true
 };
 let stun_turn_config = {"iceServers":[
@@ -68,11 +68,11 @@ var VideoChat = {
   },
 
   onFull: function(message){
-    alert(message+"満室のため現在入室出来ません。");
+    alert(message+"は満室のため現在入室出来ません。");
   },
 
   onNG: function(message){
-    alert(message+"満室のため現在入室出来ません。");
+    alert(message+"は満室のため現在入室出来ません。");
   },
   onOffer: function(offer){
     console.log('Got an offer')

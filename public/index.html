@@ -8,7 +8,7 @@
 <body>
   <h1>Video Chat</h1>
   <video id="local-video" height="150" autoplay></video>
-  <video id="remote-video" height="150" autoplay></video>
+  <video id="remote-video" height="350" autoplay></video>
 
   <div>
     <button id="get-video" onclick="startVideo()" >Start Video</button>
@@ -16,6 +16,14 @@
     <button id="call" disabled="disabled">Call</button>
     <button id="hangup" onclick="hangup()" disabled="disabled">HangUp</button>
     <button id="record" onclick="startRecord()" disabled="disabled">record</button>
+  </div>
+
+  <div>
+    <ul>
+      <li>starVideoを押してください。相手もstartVideoを押すと、callボタンがアクティブになります</li>
+      <li>Callボタンがアクティブになったら、どちらからでも良いのでCallをしてください</li>
+      <li>動画を保存したい場合は、recordボタンを押してください。</li>
+    </ul>
   </div>
 
   <script src="socket.io.js"></script>
