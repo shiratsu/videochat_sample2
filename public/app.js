@@ -223,27 +223,27 @@ var VideoChat = {
 VideoChat.socket.on('error', (error) => {
   // ...
   console.log("Error not connected:"+error);
-  alert("シグナリングサーバに接続できません。");
+  alert("シグナリングサーバに接続できません。管理者に連絡してください");
 });
 VideoChat.socket.on('disconnect', (reason) => {
   // ...
   console.log("Error not connected:"+reason);
-  alert("シグナリングサーバに接続できません。");
+  alert("シグナリングサーバに接続できません。管理者に連絡してください");
 });
 VideoChat.socket.on('reconnect_error', (error) => {
   // ...
   console.log("reconnect_error: not connected:"+error);
-  alert("シグナリングサーバに接続できません。");
+  alert("シグナリングサーバに接続できません。管理者に連絡してください");
 });
 VideoChat.socket.on('reconnect_failed', () => {
   // ...
   console.log("reconnect_failed: not connected:");
-  alert("シグナリングサーバに接続できません。");
+  alert("シグナリングサーバに接続できません。管理者に連絡してください");
 });
 VideoChat.socket.on('connect_timeout', (timeout) => {
   // ...
   console.log("connect_timeout: not connected:");
-  alert("シグナリングサーバに接続できません。");
+  alert("シグナリングサーバに接続できません。管理者に連絡してください");
 });
 
 VideoChat.videoButton = document.getElementById('get-video');
